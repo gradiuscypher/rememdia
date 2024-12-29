@@ -1,0 +1,11 @@
+NoteInput {
+    align: center middle;
+}
+
+#note-input {
+    layout: vertical;
+}
+
+#tag-status {
+    padding: 0 1;
+}
