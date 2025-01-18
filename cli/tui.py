@@ -4,7 +4,7 @@
 # to run textual debug from git repo:
 # uv run textual run --dev -c uv run tui.py
 
-
+import httpx
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.containers import Container
@@ -73,11 +73,17 @@ class NoteInput(ModalScreen):
             id="note-input",
         )
 
-    def on_input_submitted(self, event: Input.Submitted) -> None:
+    async def on_input_submitted(self, event: Input.Submitted) -> None:
         note_value = self.query_one("#notes", Input).value
 
-        if event.value:
+        if event.value and event.input.id == "tags":
             self.tags.append(event.value)
+
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                "http://127.0.0.1:8000/note",
+                json={"note": note_value, "tags": self.tags},
+            )
 
         note_str = f"{note_value}: [{self.tags}]"
         self.dismiss(note_str)

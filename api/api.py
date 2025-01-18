@@ -35,7 +35,7 @@ async def validation_exception_handler(
     )
 
 
-@app.post("/save_note")
+@app.post("/note")
 async def save_note(note_obj: NoteModel, db: AsyncSession = Depends(get_db)) -> dict:
     try:
         new_note = NoteOrm(note=note_obj.note)
@@ -58,7 +58,7 @@ async def save_note(note_obj: NoteModel, db: AsyncSession = Depends(get_db)) -> 
         return {"error": str(e)}
 
 
-@app.get("/get_notes")
+@app.get("/note")
 async def get_notes(db: AsyncSession = Depends(get_db)) -> list[NoteModel] | dict:
     try:
         query = select(NoteOrm).options(selectinload(NoteOrm.tags))
@@ -80,6 +80,6 @@ async def get_notes(db: AsyncSession = Depends(get_db)) -> list[NoteModel] | dic
         return {"error": str(e)}
 
 
-@app.post("/save_link")
+@app.post("/link")
 async def save_link(link: str, tags: list[str]) -> dict:
     return {"link": link}
