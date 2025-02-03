@@ -7,9 +7,9 @@
 import httpx
 from textual.app import App, ComposeResult
 from textual.binding import Binding
-from textual.containers import Container
+from textual.containers import Container, Horizontal
 from textual.screen import ModalScreen, Screen
-from textual.widgets import Footer, Input, Log, Static
+from textual.widgets import Footer, Input, Log, Static, Switch
 
 
 class FindLink(Screen):
@@ -104,6 +104,7 @@ class LinkInput(ModalScreen):
             key="escape",
             action="app.pop_screen",
         ),
+        Binding(key="ctrl+r", action="reminder", key_display="Ctrl+R", show=True),
     ]
 
     tags = []
@@ -125,8 +126,17 @@ class LinkInput(ModalScreen):
                 Input(id="tags"),
                 id="tag-input-container",
             ),
+            Horizontal(
+                Static("Reminder: ", classes="label"),
+                Switch(value=False, id="reminder"),
+            ),
+            Footer(),
             id="link-input",
         )
+
+    def action_reminder(self) -> None:
+        reminder = self.query_one("#reminder", Switch)
+        reminder.value = not reminder.value
 
     async def on_input_submitted(self, event: Input.Submitted) -> None:
         link_value = self.query_one("#links", Input).value

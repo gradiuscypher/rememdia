@@ -9,3 +9,19 @@ NoteInput {
 #tag-status {
     padding: 0 1;
 }
+
+.container {
+    height: auto;
+    width: auto;
+}
+
+Switch {
+    width: auto;
+    height: auto;
+}
+
+.label {
+    height: 3;
+    content-align: center middle;
+    width: auto;
+}
