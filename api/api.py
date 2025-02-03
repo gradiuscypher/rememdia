@@ -9,7 +9,7 @@ from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
 
 from database import get_db, engine, Base
-from models import NoteModel, NoteOrm, TagOrm
+from models import NoteModel, NoteOrm, TagOrm, LinkModel, LinkOrm
 
 
 @asynccontextmanager
@@ -81,5 +81,46 @@ async def get_notes(db: AsyncSession = Depends(get_db)) -> list[NoteModel] | dic
 
 
 @app.post("/link")
-async def save_link(link: str, tags: list[str]) -> dict:
-    return {"link": link}
+async def save_link(link_obj: LinkModel, db: AsyncSession = Depends(get_db)) -> dict:
+    try:
+        new_link = LinkOrm(url=link_obj.url, summary=link_obj.summary)
+        db.add(new_link)
+
+        for tag in link_obj.tags:
+            result = await db.execute(select(TagOrm).where(TagOrm.name == tag))
+            tag_instance = result.scalar_one_or_none()
+
+            if tag_instance is None:
+                tag_instance = TagOrm(name=tag)
+                db.add(tag_instance)
+
+            new_link.tags.append(tag_instance)
+
+        await db.commit()
+        return {"success": "Link saved"}
+
+    except Exception as e:
+        return {"error": str(e)}
+
+
+@app.get("/link")
+async def get_link(db: AsyncSession = Depends(get_db)) -> list[LinkModel] | dict:
+    try:
+        query = select(LinkOrm).options(selectinload(LinkOrm.tags))
+        result = await db.execute(query)
+        links = result.scalars().all()
+
+        link_models = []
+
+        for link in links:
+            link_model = LinkModel(
+                url=link.url,
+                summary=link.summary,
+                tags=[tag.name for tag in link.tags],
+            )
+            link_models.append(link_model)
+
+        return link_models
+
+    except Exception as e:
+        return {"error": str(e)}

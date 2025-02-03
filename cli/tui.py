@@ -80,13 +80,73 @@ class NoteInput(ModalScreen):
             self.tags.append(event.value)
 
         async with httpx.AsyncClient() as client:
-            response = await client.post(
+            await client.post(
                 "http://127.0.0.1:8000/note",
                 json={"note": note_value, "tags": self.tags},
             )
 
         note_str = f"{note_value}: [{self.tags}]"
         self.dismiss(note_str)
+        self.tags.clear()
+
+    def on_input_changed(self, event: Input.Changed) -> None:
+        if event.input.id == "tags" and event.value and event.value[-1] == " ":
+            tag_list = self.query_one("#tag-status", Static)
+            tag = event.value.strip()
+            self.tags.append(tag)
+            tag_list.update("Tags: " + " ".join(self.tags))
+            event.input.clear()
+
+
+class LinkInput(ModalScreen):
+    BINDINGS = [
+        Binding(
+            key="escape",
+            action="app.pop_screen",
+        ),
+    ]
+
+    tags = []
+
+    def compose(self) -> ComposeResult:
+        yield Container(
+            Container(
+                Static("Link:"),
+                Input(id="links"),
+                id="link-input-container",
+            ),
+            Container(
+                Static("Summary:"),
+                Input(id="summary"),
+                id="summary-input-container",
+            ),
+            Container(
+                Static("Tags:", id="tag-status"),
+                Input(id="tags"),
+                id="tag-input-container",
+            ),
+            id="link-input",
+        )
+
+    async def on_input_submitted(self, event: Input.Submitted) -> None:
+        link_value = self.query_one("#links", Input).value
+        summary_value = self.query_one("#summary", Input).value
+
+        if event.value and event.input.id == "tags":
+            self.tags.append(event.value)
+
+        async with httpx.AsyncClient() as client:
+            await client.post(
+                "http://127.0.0.1:8000/link",
+                json={
+                    "url": link_value,
+                    "summary": summary_value,
+                    "tags": self.tags,
+                },
+            )
+
+        link_str = f"{link_value}: [{self.tags}]"
+        self.dismiss(link_str)
         self.tags.clear()
 
     def on_input_changed(self, event: Input.Changed) -> None:
@@ -114,8 +174,12 @@ class Save(ModalScreen):
         self.app.switch_mode("base")
 
     def action_link(self) -> None:
-        window_text = self.query_one("#textlog", Log)
-        window_text.write_line("This is data in the save screen")
+        def write_link(link_str: str | None) -> None:
+            window_text = self.query_one("#textlog", Log)
+            if link_str:
+                window_text.write_line(link_str)
+
+        self.app.push_screen(LinkInput(id="link-input"), write_link)
 
     def action_note(self) -> None:
         def write_note(note_str: str | None) -> None:
