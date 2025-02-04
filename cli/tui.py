@@ -8,7 +8,7 @@ import httpx
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.containers import Container, Horizontal
-from textual.screen import ModalScreen, Screen
+from textual.screen import Screen
 from textual.widgets import Footer, Input, Log, Static, Switch
 
 
@@ -26,7 +26,7 @@ class FindLink(Screen):
         yield Footer()
 
 
-class Find(ModalScreen):
+class Find(Screen):
     BINDINGS = [
         Binding(key="e", action="update_text()", description="Find a link"),
         Binding(
@@ -48,11 +48,25 @@ class Find(ModalScreen):
         yield Footer()
 
 
-class NoteInput(ModalScreen):
+class NoteInput(Screen):
     BINDINGS = [
         Binding(
             key="escape",
             action="app.pop_screen",
+        ),
+        Binding(
+            key="ctrl+r",
+            action="reminder",
+            key_display="ctrl+r",
+            show=True,
+            description="Reminder",
+        ),
+        Binding(
+            key="ctrl+l",
+            action="reading_list",
+            key_display="ctrl+l",
+            show=True,
+            description="Reading List",
         ),
     ]
 
@@ -70,11 +84,28 @@ class NoteInput(ModalScreen):
                 Input(id="tags"),
                 id="tag-input-container",
             ),
+            Horizontal(
+                Static("Reminder: ", classes="label"),
+                Switch(value=False, id="reminder"),
+                Static("Reading List: ", classes="label"),
+                Switch(value=False, id="reading-list"),
+            ),
+            Footer(),
             id="note-input",
         )
 
+    def action_reminder(self) -> None:
+        reminder = self.query_one("#reminder", Switch)
+        reminder.value = not reminder.value
+
+    def action_reading_list(self) -> None:
+        reading_list = self.query_one("#reading-list", Switch)
+        reading_list.value = not reading_list.value
+
     async def on_input_submitted(self, event: Input.Submitted) -> None:
         note_value = self.query_one("#notes", Input).value
+        reminder_value = self.query_one("#reminder", Switch).value
+        reading_value = self.query_one("#reading-list", Switch).value
 
         if event.value and event.input.id == "tags":
             self.tags.append(event.value)
@@ -82,7 +113,12 @@ class NoteInput(ModalScreen):
         async with httpx.AsyncClient() as client:
             await client.post(
                 "http://127.0.0.1:8000/note",
-                json={"note": note_value, "tags": self.tags},
+                json={
+                    "note": note_value,
+                    "tags": self.tags,
+                    "reminder": reminder_value,
+                    "reading": reading_value,
+                },
             )
 
         note_str = f"{note_value}: [{self.tags}]"
@@ -98,13 +134,26 @@ class NoteInput(ModalScreen):
             event.input.clear()
 
 
-class LinkInput(ModalScreen):
+class LinkInput(Screen):
     BINDINGS = [
         Binding(
             key="escape",
             action="app.pop_screen",
         ),
-        Binding(key="ctrl+r", action="reminder", key_display="Ctrl+R", show=True),
+        Binding(
+            key="ctrl+r",
+            action="reminder",
+            key_display="ctrl+r",
+            show=True,
+            description="Reminder",
+        ),
+        Binding(
+            key="ctrl+l",
+            action="reading_list",
+            key_display="ctrl+l",
+            show=True,
+            description="Reading List",
+        ),
     ]
 
     tags = []
@@ -129,6 +178,8 @@ class LinkInput(ModalScreen):
             Horizontal(
                 Static("Reminder: ", classes="label"),
                 Switch(value=False, id="reminder"),
+                Static("Reading List: ", classes="label"),
+                Switch(value=False, id="reading-list"),
             ),
             Footer(),
             id="link-input",
@@ -138,9 +189,15 @@ class LinkInput(ModalScreen):
         reminder = self.query_one("#reminder", Switch)
         reminder.value = not reminder.value
 
+    def action_reading_list(self) -> None:
+        reading_list = self.query_one("#reading-list", Switch)
+        reading_list.value = not reading_list.value
+
     async def on_input_submitted(self, event: Input.Submitted) -> None:
         link_value = self.query_one("#links", Input).value
         summary_value = self.query_one("#summary", Input).value
+        reminder_value = self.query_one("#reminder", Switch).value
+        reading_value = self.query_one("#reading-list", Switch).value
 
         if event.value and event.input.id == "tags":
             self.tags.append(event.value)
@@ -152,6 +209,8 @@ class LinkInput(ModalScreen):
                     "url": link_value,
                     "summary": summary_value,
                     "tags": self.tags,
+                    "reminder": reminder_value,
+                    "reading": reading_value,
                 },
             )
 
@@ -168,7 +227,7 @@ class LinkInput(ModalScreen):
             event.input.clear()
 
 
-class Save(ModalScreen):
+class Save(Screen):
     CSS_PATH = "tui.tcss"
     BINDINGS = [
         Binding(key="l", action="link", description="Save a link"),

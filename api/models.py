@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import String, Integer, ForeignKey
+from sqlalchemy import Boolean, String, Integer, ForeignKey
 from pydantic import BaseModel, ConfigDict
 
 from database import Base
@@ -9,6 +9,8 @@ class LinkModel(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     url: str
     summary: str
+    reminder: bool
+    reading: bool
     tags: list[str]
 
 
@@ -17,6 +19,8 @@ class LinkOrm(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
     url: Mapped[str] = mapped_column(String, nullable=False)
     summary: Mapped[str] = mapped_column(String, nullable=False)
+    reminder: Mapped[bool] = mapped_column(Boolean)
+    reading: Mapped[bool] = mapped_column(Boolean)
     tags: Mapped[list["TagOrm"]] = relationship(
         "TagOrm", secondary="link_tags", back_populates="links"
     )
@@ -43,6 +47,8 @@ class TagOrm(Base):
 class NoteModel(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     note: str
+    reminder: bool
+    reading: bool
     tags: list[str]
 
 
@@ -50,6 +56,8 @@ class NoteOrm(Base):
     __tablename__ = "notes"
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
     note: Mapped[str] = mapped_column(String, nullable=False)
+    reminder: Mapped[bool] = mapped_column(Boolean)
+    reading: Mapped[bool] = mapped_column(Boolean)
     tags: Mapped[list["TagOrm"]] = relationship(
         "TagOrm", secondary="note_tags", back_populates="notes"
     )

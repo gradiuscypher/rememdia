@@ -1,7 +1,7 @@
 import logging
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
-from fastapi import FastAPI, Depends, Request, status
+from fastapi import FastAPI, Depends, Request, status, HTTPException
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -38,7 +38,9 @@ async def validation_exception_handler(
 @app.post("/note")
 async def save_note(note_obj: NoteModel, db: AsyncSession = Depends(get_db)) -> dict:
     try:
-        new_note = NoteOrm(note=note_obj.note)
+        new_note = NoteOrm(
+            note=note_obj.note, reminder=note_obj.reminder, reading=note_obj.reading
+        )
         db.add(new_note)
 
         for tag in note_obj.tags:
@@ -55,7 +57,7 @@ async def save_note(note_obj: NoteModel, db: AsyncSession = Depends(get_db)) -> 
         return {"success": "Note saved"}
 
     except Exception as e:
-        return {"error": str(e)}
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/note")
@@ -71,6 +73,8 @@ async def get_notes(db: AsyncSession = Depends(get_db)) -> list[NoteModel] | dic
             note_model = NoteModel(
                 note=note.note,
                 tags=[tag.name for tag in note.tags],
+                reminder=note.reminder,
+                reading=note.reading,
             )
             note_models.append(note_model)
 
@@ -83,7 +87,12 @@ async def get_notes(db: AsyncSession = Depends(get_db)) -> list[NoteModel] | dic
 @app.post("/link")
 async def save_link(link_obj: LinkModel, db: AsyncSession = Depends(get_db)) -> dict:
     try:
-        new_link = LinkOrm(url=link_obj.url, summary=link_obj.summary)
+        new_link = LinkOrm(
+            url=link_obj.url,
+            summary=link_obj.summary,
+            reminder=link_obj.reminder,
+            reading=link_obj.reading,
+        )
         db.add(new_link)
 
         for tag in link_obj.tags:
@@ -117,6 +126,8 @@ async def get_link(db: AsyncSession = Depends(get_db)) -> list[LinkModel] | dict
                 url=link.url,
                 summary=link.summary,
                 tags=[tag.name for tag in link.tags],
+                reminder=False,
+                reading=False,
             )
             link_models.append(link_model)
 
