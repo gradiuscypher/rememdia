@@ -5,7 +5,8 @@ A quick note taking app with helpful features
 # broad TODO
 
 - oauth implementation, maybe API keys instead?
-- reading list / reminder followup
+- reading list implementation
+- followup list implementation
 
 # references
 

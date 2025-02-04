@@ -28,7 +28,7 @@ class FindLink(Screen):
 
 class Find(Screen):
     BINDINGS = [
-        Binding(key="e", action="update_text()", description="Find a link"),
+        Binding(key="l", action="find_links", description="Find a link"),
         Binding(
             key="escape",
             action="back",
@@ -42,6 +42,9 @@ class Find(Screen):
 
     def action_back(self) -> None:
         self.app.switch_mode("base")
+
+    def action_find_links(self) -> None:
+        self.app.push_screen(FindLink(id="find-link"))
 
     def compose(self) -> ComposeResult:
         yield Log(id="textlog").write_line("Hello find.")

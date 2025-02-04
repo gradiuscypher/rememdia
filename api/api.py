@@ -81,7 +81,7 @@ async def get_notes(db: AsyncSession = Depends(get_db)) -> list[NoteModel] | dic
         return note_models
 
     except Exception as e:
-        return {"error": str(e)}
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/link")
