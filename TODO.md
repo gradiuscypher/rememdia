@@ -8,6 +8,8 @@
 - Add reminders to links or notes with shortcut
 - Docker setup for TUI and backend
 - Fetching discord messages from a channel where someone saved links and notes
+- Some sort of kanban/idea sorter/daily tasks system
+- Brag doc tracker/interface
 
 # Backlog
 - Native app for OSX, Windows, Linux
