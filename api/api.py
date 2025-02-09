@@ -10,6 +10,7 @@ from sqlalchemy.orm import selectinload
 
 from database import get_db, engine, Base
 from models import NoteModel, NoteOrm, TagOrm, LinkModel, LinkOrm
+from helpers import get_link_metadata
 
 
 @asynccontextmanager
@@ -87,11 +88,14 @@ async def get_notes(db: AsyncSession = Depends(get_db)) -> list[NoteModel] | dic
 @app.post("/link")
 async def save_link(link_obj: LinkModel, db: AsyncSession = Depends(get_db)) -> dict:
     try:
+        meta_title, meta_description = await get_link_metadata(link_obj.url)
         new_link = LinkOrm(
             url=link_obj.url,
             summary=link_obj.summary,
             reminder=link_obj.reminder,
             reading=link_obj.reading,
+            meta_title=meta_title,
+            meta_description=meta_description,
         )
         db.add(new_link)
 
@@ -128,6 +132,8 @@ async def get_link(db: AsyncSession = Depends(get_db)) -> list[LinkModel] | dict
                 tags=[tag.name for tag in link.tags],
                 reminder=False,
                 reading=False,
+                meta_title=link.meta_title,
+                meta_description=link.meta_description,
             )
             link_models.append(link_model)
 

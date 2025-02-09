@@ -9,6 +9,8 @@ class LinkModel(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     url: str
     summary: str
+    meta_title: str | None = None
+    meta_description: str | None = None
     reminder: bool
     reading: bool
     tags: list[str]
@@ -19,6 +21,8 @@ class LinkOrm(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
     url: Mapped[str] = mapped_column(String, nullable=False)
     summary: Mapped[str] = mapped_column(String, nullable=False)
+    meta_title: Mapped[str] = mapped_column(String)
+    meta_description: Mapped[str] = mapped_column(String)
     reminder: Mapped[bool] = mapped_column(Boolean)
     reading: Mapped[bool] = mapped_column(Boolean)
     tags: Mapped[list["TagOrm"]] = relationship(

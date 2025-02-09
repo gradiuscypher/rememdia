@@ -1,9 +1,11 @@
 # Working On
+
 - Metadata collection of saved links
 
 # TODO
 
 # Next Up
+
 - Mark links as follow up with something like ctrl + r
 - Add reminders to links or notes with shortcut
 - Docker setup for TUI and backend
@@ -12,6 +14,7 @@
 - Brag doc tracker/interface
 
 # Backlog
+
 - Native app for OSX, Windows, Linux
 - Daily reminders or scheduled notifications
 - Notifications of youtube/blog/etc posts: yt notifications get lost and the algo sucks
