@@ -7,6 +7,7 @@ from database import Base
 
 class LinkModel(BaseModel):
     model_config = ConfigDict(from_attributes=True)
+    link_id: int | None = None
     url: str
     summary: str
     meta_title: str | None = None

@@ -127,11 +127,12 @@ async def get_link(db: AsyncSession = Depends(get_db)) -> list[LinkModel] | dict
 
         for link in links:
             link_model = LinkModel(
+                link_id=link.id,
                 url=link.url,
                 summary=link.summary,
                 tags=[tag.name for tag in link.tags],
-                reminder=False,
-                reading=False,
+                reminder=link.reminder,
+                reading=link.reading,
                 meta_title=link.meta_title,
                 meta_description=link.meta_description,
             )

@@ -9,21 +9,59 @@ from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.containers import Container, Horizontal
 from textual.screen import Screen
-from textual.widgets import Footer, Input, Log, Static, Switch
+from textual.widgets import DataTable, Footer, Input, Log, Static, Switch
 
 
 class FindLink(Screen):
     BINDINGS = [
         Binding(
             key="escape",
-            action="switch_mode('find')",
+            action="app.pop_screen",
             description="Close Find",
         ),
     ]
 
     def compose(self) -> ComposeResult:
-        yield Static("This is the find link screen.")
+        yield DataTable()
         yield Footer()
+
+    async def on_mount(self) -> None:
+        table = self.query_one(DataTable)
+        table.add_columns(
+            "ID",
+            "URL",
+            "Summary",
+            "Tags",
+            "Reminder",
+            "Reading",
+            "Meta.Title",
+            "Meta.Description",
+        )
+
+        async with httpx.AsyncClient() as client:
+            links = await client.get("http://localhost:8000/link")
+            for link in links.json():
+                table_id = link["link_id"]
+                url = link["url"]
+                summary = link["summary"]
+                tags = link["tags"]
+                meta_title = link["meta_title"][:50]
+                meta_description = link["meta_description"][:50]
+                reminder = "✅" if bool(link["reminder"]) else "❌"
+                reading = "✅" if bool(link["reading"]) else "❌"
+                table.add_row(
+                    table_id,
+                    url,
+                    summary,
+                    tags,
+                    reminder,
+                    reading,
+                    meta_title,
+                    meta_description,
+                )
+
+    def action_back(self) -> None:
+        self.app.switch_mode("base")
 
 
 class Find(Screen):
@@ -47,7 +85,7 @@ class Find(Screen):
         self.app.push_screen(FindLink(id="find-link"))
 
     def compose(self) -> ComposeResult:
-        yield Log(id="textlog").write_line("Hello find.")
+        yield Log(id="textlog")
         yield Footer()
 
 
@@ -262,7 +300,7 @@ class Save(Screen):
         self.app.push_screen(NoteInput(id="note-input"), write_note)
 
     def compose(self) -> ComposeResult:
-        yield Log(id="textlog").write_line("Hello save.")
+        yield Log(id="textlog")
         yield Footer()
 
 
