@@ -8,7 +8,7 @@ import httpx
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.containers import Container, Horizontal
-from textual.screen import Screen
+from textual.screen import Screen, ModalScreen
 from textual.widgets import DataTable, Footer, Input, Log, Static, Switch
 
 
@@ -18,6 +18,11 @@ class FindLink(Screen):
             key="escape",
             action="app.pop_screen",
             description="Close Find",
+        ),
+        Binding(
+            key="u",
+            action="search",
+            description="Search",
         ),
     ]
 
@@ -62,6 +67,23 @@ class FindLink(Screen):
 
     def action_back(self) -> None:
         self.app.switch_mode("base")
+
+    def action_search(self) -> None:
+        self.app.push_screen(FindLinkSearch(id="find-link-search"))
+
+
+class FindLinkSearch(ModalScreen):
+    BINDINGS = [
+        Binding(
+            key="escape",
+            action="app.pop_screen",
+            description="Close Find",
+        ),
+    ]
+
+    def compose(self) -> ComposeResult:
+        yield Input(placeholder="Search for a link")
+        yield Footer()
 
 
 class Find(Screen):

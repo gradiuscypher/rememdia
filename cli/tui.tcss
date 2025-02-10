@@ -2,6 +2,10 @@ NoteInput {
     align: center middle;
 }
 
+FindLinkSearch {
+    align: center middle;
+}
+
 #note-input {
     layout: vertical;
 }

@@ -142,3 +142,19 @@ async def get_link(db: AsyncSession = Depends(get_db)) -> list[LinkModel] | dict
 
     except Exception as e:
         return {"error": str(e)}
+
+
+@app.delete("/link/{link_id}")
+async def delete_link(link_id: int, db: AsyncSession = Depends(get_db)) -> dict:
+    try:
+        query = select(LinkOrm).where(LinkOrm.id == link_id)
+        result = await db.execute(query)
+        link = result.scalar_one_or_none()
+        if link:
+            await db.delete(link)
+            await db.commit()
+            return {"success": "Link deleted"}
+        else:
+            return {"error": "Link not found"}
+    except Exception as e:
+        return {"error": str(e)}

@@ -1,5 +1,6 @@
 # Working On
 
+- When swapping to the "save" mode from "find" mode, the input field stays in the middle, but if you just search from find, it goes to the top
 - Working find interface
 - ability to delete and edit notes and links
 - add datetime to all notes/links
