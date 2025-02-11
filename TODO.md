@@ -19,6 +19,8 @@
 # Backlog
 
 - Native app for OSX, Windows, Linux
+- RSS feed subscription management - youtube, blogs, podcasts, etc
+- Social feed sharing between groups
 - Daily reminders or scheduled notifications
 - Notifications of youtube/blog/etc posts: yt notifications get lost and the algo sucks
 - Dashboards of time sensitive and important things
