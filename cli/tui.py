@@ -13,6 +13,8 @@ from textual.widgets import DataTable, Footer, Input, Log, Static, Switch
 
 
 class FindLink(Screen):
+    links = []
+
     BINDINGS = [
         Binding(
             key="escape",
@@ -24,7 +26,40 @@ class FindLink(Screen):
             action="search",
             description="Search",
         ),
+        Binding(
+            key="c",
+            action="clear_search",
+            description="Clear Search",
+        ),
     ]
+
+    def update_table(self, search_string: str) -> None:
+        table = self.query_one(DataTable)
+        table.clear()
+        for link in self.links:
+            table_id = link["link_id"]
+            url = link["url"]
+            summary = link["summary"]
+            tags = link["tags"]
+            meta_title = link["meta_title"][:50]
+            meta_description = link["meta_description"][:50]
+            reminder = "✅" if bool(link["reminder"]) else "❌"
+            reading = "✅" if bool(link["reading"]) else "❌"
+
+            if any(
+                search_string in s
+                for s in [url, summary, tags, meta_title, meta_description]
+            ):
+                table.add_row(
+                    table_id,
+                    url,
+                    summary,
+                    tags,
+                    reminder,
+                    reading,
+                    meta_title,
+                    meta_description,
+                )
 
     def compose(self) -> ComposeResult:
         yield DataTable()
@@ -44,8 +79,9 @@ class FindLink(Screen):
         )
 
         async with httpx.AsyncClient() as client:
-            links = await client.get("http://localhost:8000/link")
-            for link in links.json():
+            link_request = await client.get("http://localhost:8000/link")
+            self.links = link_request.json()
+            for link in self.links:
                 table_id = link["link_id"]
                 url = link["url"]
                 summary = link["summary"]
@@ -69,7 +105,14 @@ class FindLink(Screen):
         self.app.switch_mode("base")
 
     def action_search(self) -> None:
-        self.app.push_screen(FindLinkSearch(id="find-link-search"))
+        def execute_search(search_str: str | None) -> None:
+            if search_str:
+                self.update_table(search_str)
+
+        self.app.push_screen(FindLinkSearch(id="find-link-search"), execute_search)
+
+    def action_clear_search(self) -> None:
+        self.update_table("")
 
 
 class FindLinkSearch(ModalScreen):
@@ -84,6 +127,10 @@ class FindLinkSearch(ModalScreen):
     def compose(self) -> ComposeResult:
         yield Input(placeholder="Search for a link")
         yield Footer()
+
+    def on_input_submitted(self, event: Input.Submitted) -> None:
+        if event.value:
+            self.dismiss(event.value)
 
 
 class Find(Screen):

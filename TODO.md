@@ -1,12 +1,11 @@
 # Working On
 
-- When swapping to the "save" mode from "find" mode, the input field stays in the middle, but if you just search from find, it goes to the top
-- Working find interface
 - ability to delete and edit notes and links
 - add datetime to all notes/links
 
 # Next Up
 
+- Remove the save mode shortcut from the find screen
 - Docker setup for TUI and backend
 - Fetching discord messages from a channel where someone saved links and notes
 - Some sort of kanban/idea sorter/daily tasks system
