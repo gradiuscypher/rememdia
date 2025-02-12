@@ -18,7 +18,7 @@ class FindLink(Screen):
     BINDINGS = [
         Binding(
             key="escape",
-            action="app.pop_screen",
+            action="app.switch_mode('base')",
             description="Close Find",
         ),
         Binding(
@@ -377,7 +377,7 @@ class Save(Screen):
         Binding(key="n", action="note", description="Save a note"),
         Binding(
             key="escape",
-            action="back",
+            action="app.switch_mode('base')",
             description="Exit Save",
         ),
     ]

@@ -14,6 +14,7 @@
 # TODO
 
 - API pagination for link listing
+- Split TUI into multiple files
 
 # Backlog
 
