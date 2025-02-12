@@ -31,42 +31,25 @@ class FindLink(Screen):
             action="clear_search",
             description="Clear Search",
         ),
+        Binding(
+            key="j",
+            action="move_cursor('down')",
+        ),
+        Binding(
+            key="k",
+            action="move_cursor('up')",
+        ),
+        Binding(
+            key="d",
+            action="delete_row",
+        ),
     ]
 
-    def update_table(self, search_string: str) -> None:
+    async def refresh_table(self) -> None:
+        self.links.clear()
         table = self.query_one(DataTable)
-        table.clear()
-        for link in self.links:
-            table_id = link["link_id"]
-            url = link["url"]
-            summary = link["summary"]
-            tags = link["tags"]
-            meta_title = link["meta_title"][:50]
-            meta_description = link["meta_description"][:50]
-            reminder = "✅" if bool(link["reminder"]) else "❌"
-            reading = "✅" if bool(link["reading"]) else "❌"
-
-            if any(
-                search_string in s
-                for s in [url, summary, tags, meta_title, meta_description]
-            ):
-                table.add_row(
-                    table_id,
-                    url,
-                    summary,
-                    tags,
-                    reminder,
-                    reading,
-                    meta_title,
-                    meta_description,
-                )
-
-    def compose(self) -> ComposeResult:
-        yield DataTable()
-        yield Footer()
-
-    async def on_mount(self) -> None:
-        table = self.query_one(DataTable)
+        table.clear(columns=True)
+        table.cursor_type = "row"
         table.add_columns(
             "ID",
             "URL",
@@ -101,6 +84,41 @@ class FindLink(Screen):
                     meta_description,
                 )
 
+    def update_table(self, search_string: str) -> None:
+        table = self.query_one(DataTable)
+        table.clear()
+        for link in self.links:
+            table_id = link["link_id"]
+            url = link["url"]
+            summary = link["summary"]
+            tags = link["tags"]
+            meta_title = link["meta_title"][:50]
+            meta_description = link["meta_description"][:50]
+            reminder = "✅" if bool(link["reminder"]) else "❌"
+            reading = "✅" if bool(link["reading"]) else "❌"
+
+            if any(
+                search_string in s
+                for s in [url, summary, tags, meta_title, meta_description]
+            ):
+                table.add_row(
+                    table_id,
+                    url,
+                    summary,
+                    tags,
+                    reminder,
+                    reading,
+                    meta_title,
+                    meta_description,
+                )
+
+    def compose(self) -> ComposeResult:
+        yield DataTable()
+        yield Footer()
+
+    async def on_mount(self) -> None:
+        await self.refresh_table()
+
     def action_back(self) -> None:
         self.app.switch_mode("base")
 
@@ -113,6 +131,21 @@ class FindLink(Screen):
 
     def action_clear_search(self) -> None:
         self.update_table("")
+
+    def action_move_cursor(self, direction: str) -> None:
+        table = self.query_one(DataTable)
+        table.move_cursor(
+            row=table.cursor_row + 1 if direction == "down" else table.cursor_row - 1
+        )
+
+    async def action_delete_row(self) -> None:
+        table = self.query_one(DataTable)
+        row_key, _ = table.coordinate_to_cell_key(table.cursor_coordinate)
+        link_id = table.get_cell_at(table.cursor_coordinate)
+        async with httpx.AsyncClient() as client:
+            await client.delete(f"http://127.0.0.1:8000/link/{link_id}")
+        table.remove_row(row_key)
+        await self.refresh_table()
 
 
 class FindLinkSearch(ModalScreen):

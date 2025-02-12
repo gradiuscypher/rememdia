@@ -1,7 +1,8 @@
 # Working On
 
-- ability to delete and edit notes and links
 - add datetime to all notes/links
+- edit notes
+- edit links
 
 # Next Up
 
@@ -12,7 +13,7 @@
 
 # TODO
 
-- API pagination
+- API pagination for link listing
 
 # Backlog
 
