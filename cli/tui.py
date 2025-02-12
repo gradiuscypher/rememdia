@@ -374,17 +374,23 @@ class Save(Screen):
 
 
 class Base(Screen):
+    BINDINGS = [
+        Binding(key="s", action="save", description="Save"),
+        Binding(key="f", action="find", description="Find"),
+    ]
+
     def compose(self) -> ComposeResult:
         yield Static("This is the base mode.")
         yield Footer()
 
+    def action_save(self) -> None:
+        self.app.switch_mode("save")
+
+    def action_find(self) -> None:
+        self.app.switch_mode("find")
+
 
 class RemTui(App):
-    BINDINGS = [
-        Binding(key="s", action="switch_mode('save')", description="Save"),
-        Binding(key="f", action="switch_mode('find')", description="Find"),
-    ]
-
     MODES = {"base": Base, "save": Save, "find": Find}
 
     def compose(self) -> ComposeResult:
