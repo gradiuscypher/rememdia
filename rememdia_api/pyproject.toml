@@ -14,6 +14,7 @@ dependencies = [
     "sqlalchemy[asyncio]>=2.0.37",
     "textual-dev>=1.7.0",
     "textual>=1.0.0",
+    "asgi-lifespan>=2.1.0",
 ]
 
 [tool.uv]

@@ -5,3 +5,6 @@ run:
 
 tui:
 	uv run cli/tui.py
+
+test:
+	REM_ENV=test uv run pytest -vv
