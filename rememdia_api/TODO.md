@@ -1,6 +1,6 @@
 # Working On
 
-- write tests to test functionality
+- write tests to test functionality, with in memory DB
 - edit notes
 - edit links
 
