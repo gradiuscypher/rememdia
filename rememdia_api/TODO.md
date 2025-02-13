@@ -1,6 +1,6 @@
 # Working On
 
-- add datetime to all notes/links
+- write tests to test functionality
 - edit notes
 - edit links
 

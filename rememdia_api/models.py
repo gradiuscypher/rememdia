@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import Boolean, String, Integer, ForeignKey
 from pydantic import BaseModel, ConfigDict
@@ -15,6 +17,7 @@ class LinkModel(BaseModel):
     reminder: bool
     reading: bool
     tags: list[str]
+    created_at: datetime
 
 
 class LinkOrm(Base):
@@ -26,6 +29,9 @@ class LinkOrm(Base):
     meta_description: Mapped[str] = mapped_column(String)
     reminder: Mapped[bool] = mapped_column(Boolean)
     reading: Mapped[bool] = mapped_column(Boolean)
+    created_at: Mapped[datetime] = mapped_column(
+        default=datetime.now(timezone.utc), nullable=False
+    )
     tags: Mapped[list["TagOrm"]] = relationship(
         "TagOrm", secondary="link_tags", back_populates="links"
     )
@@ -54,6 +60,7 @@ class NoteModel(BaseModel):
     note: str
     reminder: bool
     reading: bool
+    created_at: datetime
     tags: list[str]
 
 
@@ -63,6 +70,9 @@ class NoteOrm(Base):
     note: Mapped[str] = mapped_column(String, nullable=False)
     reminder: Mapped[bool] = mapped_column(Boolean)
     reading: Mapped[bool] = mapped_column(Boolean)
+    created_at: Mapped[datetime] = mapped_column(
+        default=datetime.now(timezone.utc), nullable=False
+    )
     tags: Mapped[list["TagOrm"]] = relationship(
         "TagOrm", secondary="note_tags", back_populates="notes"
     )

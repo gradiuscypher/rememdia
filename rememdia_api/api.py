@@ -1,6 +1,7 @@
 import logging
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
+from datetime import datetime, timezone
 from fastapi import FastAPI, Depends, Request, status, HTTPException
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -40,7 +41,10 @@ async def validation_exception_handler(
 async def save_note(note_obj: NoteModel, db: AsyncSession = Depends(get_db)) -> dict:
     try:
         new_note = NoteOrm(
-            note=note_obj.note, reminder=note_obj.reminder, reading=note_obj.reading
+            note=note_obj.note,
+            reminder=note_obj.reminder,
+            reading=note_obj.reading,
+            created_at=datetime.now(timezone.utc),
         )
         db.add(new_note)
 
@@ -76,6 +80,7 @@ async def get_notes(db: AsyncSession = Depends(get_db)) -> list[NoteModel] | dic
                 tags=[tag.name for tag in note.tags],
                 reminder=note.reminder,
                 reading=note.reading,
+                created_at=note.created_at,
             )
             note_models.append(note_model)
 
@@ -94,6 +99,7 @@ async def save_link(link_obj: LinkModel, db: AsyncSession = Depends(get_db)) -> 
             summary=link_obj.summary,
             reminder=link_obj.reminder,
             reading=link_obj.reading,
+            created_at=datetime.now(timezone.utc),
             meta_title=meta_title,
             meta_description=meta_description,
         )
@@ -133,6 +139,7 @@ async def get_link(db: AsyncSession = Depends(get_db)) -> list[LinkModel] | dict
                 tags=[tag.name for tag in link.tags],
                 reminder=link.reminder,
                 reading=link.reading,
+                created_at=link.created_at,
                 meta_title=link.meta_title,
                 meta_description=link.meta_description,
             )
