@@ -1,6 +1,5 @@
 # Working On
 
-- write tests to test functionality, with in memory DB
 - edit notes
 - edit links
 
@@ -32,3 +31,4 @@
 - Post reading reminders to a discord channel
 - Chat with a bot about your notes and links
 - Integration with ATProto
+- Pomodoro app?
