@@ -1,5 +1,4 @@
 import pytest
-import pytest_asyncio
 from datetime import datetime, timezone
 
 from asgi_lifespan import LifespanManager
