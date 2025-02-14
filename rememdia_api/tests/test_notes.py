@@ -1,4 +1,5 @@
 import pytest
+import pytest_asyncio
 from datetime import datetime, timezone
 
 from asgi_lifespan import LifespanManager
@@ -10,7 +11,7 @@ from api import app
 client = TestClient(app)
 
 
-@pytest.mark.asyncio(loop_scope="session")
+@pytest.mark.asyncio(loop_scope="function")
 async def test_save_note() -> None:
     async with LifespanManager(app):
         async with AsyncClient(
