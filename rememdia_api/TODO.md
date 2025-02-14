@@ -1,5 +1,6 @@
 # Working On
 
+- fix tests and mock the metadata fetch, can you reset the db per test?
 - edit notes
 - edit links
 
