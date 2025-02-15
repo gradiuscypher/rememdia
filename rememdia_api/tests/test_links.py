@@ -85,3 +85,47 @@ async def test_delete_link() -> None:
             r = await client.get("/link")
             assert r.status_code == 200
             assert r.json() == []
+
+
+@pytest.mark.asyncio(loop_scope="function")
+async def test_update_link() -> None:
+    async with LifespanManager(app):
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://localhost"
+        ) as client:
+            # create the link we're updating
+            r = await client.post(
+                "/link",
+                json={
+                    "url": "https://www.google.com",
+                    "summary": "Google",
+                    "reminder": False,
+                    "reading": False,
+                    "created_at": datetime.now(timezone.utc).isoformat(),
+                    "tags": ["test1", "test2"],
+                },
+            )
+            assert r.status_code == 200
+
+            # update the link
+            r = await client.patch(
+                "/link/1",
+                json={
+                    "url": "https://www.google.com",
+                    "summary": "A Search Engine",
+                    "reminder": True,
+                    "reading": True,
+                    "tags": ["test1", "test3"],
+                },
+            )
+            assert r.text == ""
+            assert r.status_code == 200
+
+            # fetch the link and validate the changes
+            r = await client.get("/link")
+            assert r.text == ""
+            assert r.status_code == 200
+            assert r.json()[0]["summary"] == "A Search Engine"
+            assert r.json()[0]["reminder"]
+            assert r.json()[0]["reading"]
+            assert r.json()[0]["tags"] == ["test1", "test3"]

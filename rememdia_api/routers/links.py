@@ -6,7 +6,7 @@ from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
 
 from database import get_db
-from models import LinkModel, LinkOrm, TagOrm
+from models import LinkModel, LinkUpdateModel, LinkOrm, TagOrm
 from helpers import get_link_metadata
 
 link_router = APIRouter()
@@ -82,5 +82,30 @@ async def delete_link(link_id: int, db: AsyncSession = Depends(get_db)) -> dict:
         await db.delete(link)
         await db.commit()
         return {"success": "Link deleted"}
+
     else:
-        raise HTTPException(status_code=404, detail="Bob not found")
+        raise HTTPException(status_code=404, detail="Link not found")
+
+
+@link_router.patch("/link/{link_id}")
+async def update_link(
+    link_id: int, link_update: LinkUpdateModel, db: AsyncSession = Depends(get_db)
+) -> dict:
+    try:
+        query = select(LinkOrm).where(LinkOrm.id == link_id)
+        result = await db.execute(query)
+        link = result.scalar_one_or_none()
+
+        if not link:
+            raise HTTPException(status_code=404, detail="Link not found")
+
+        for field, value in link_update.model_dump(exclude_unset=True).items():
+            setattr(link, field, value)
+
+        await db.commit()
+        await db.refresh(link)
+
+        return {"success": "Link updated"}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

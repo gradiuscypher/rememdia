@@ -17,7 +17,17 @@ class LinkModel(BaseModel):
     reminder: bool
     reading: bool
     tags: list[str]
-    created_at: datetime
+    created_at: datetime | None = None
+
+
+class LinkUpdateModel(BaseModel):
+    url: str | None = None
+    summary: str | None = None
+    meta_title: str | None = None
+    meta_description: str | None = None
+    reminder: bool | None = None
+    reading: bool | None = None
+    tags: list[str] | None = None
 
 
 class LinkOrm(Base):
@@ -60,7 +70,7 @@ class NoteModel(BaseModel):
     note: str
     reminder: bool
     reading: bool
-    created_at: datetime
+    created_at: datetime | None = None
     tags: list[str]
 
 

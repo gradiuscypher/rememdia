@@ -1,5 +1,6 @@
 # Working On
 
+- link patch endpoint works manually but not during tests
 - edit notes
 - edit links
 
@@ -19,6 +20,7 @@
 
 # Backlog
 
+- Replacement app for Msty, shared history for LLM searches
 - Native app for OSX, Windows, Linux
 - RSS feed subscription management - youtube, blogs, podcasts, etc
 - Social feed sharing between groups
