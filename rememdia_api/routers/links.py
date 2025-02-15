@@ -92,15 +92,45 @@ async def update_link(
     link_id: int, link_update: LinkUpdateModel, db: AsyncSession = Depends(get_db)
 ) -> dict:
     try:
-        query = select(LinkOrm).where(LinkOrm.id == link_id)
+        query = (
+            select(LinkOrm)
+            .where(LinkOrm.id == link_id)
+            .options(selectinload(LinkOrm.tags))
+        )
         result = await db.execute(query)
         link = result.scalar_one_or_none()
 
         if not link:
             raise HTTPException(status_code=404, detail="Link not found")
 
-        for field, value in link_update.model_dump(exclude_unset=True).items():
-            setattr(link, field, value)
+        if link_update.url:
+            link.url = link_update.url
+        if link_update.summary:
+            link.summary = link_update.summary
+        if link_update.meta_title:
+            link.meta_title = link_update.meta_title
+        if link_update.meta_description:
+            link.meta_description = link_update.meta_description
+        if link_update.reminder:
+            link.reminder = link_update.reminder
+        if link_update.reading:
+            link.reading = link_update.reading
+
+        if link_update.tags:
+            # remove the previous tags
+            for tag in link.tags:
+                link.tags.clear()
+
+            # add the updated tags
+            for tag in link_update.tags:
+                result = await db.execute(select(TagOrm).where(TagOrm.name == tag))
+                tag_instance = result.scalar_one_or_none()
+
+                if tag_instance is None:
+                    tag_instance = TagOrm(name=tag)
+                    db.add(tag_instance)
+
+                link.tags.append(tag_instance)
 
         await db.commit()
         await db.refresh(link)

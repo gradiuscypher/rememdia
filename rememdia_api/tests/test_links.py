@@ -102,7 +102,7 @@ async def test_update_link() -> None:
                     "reminder": False,
                     "reading": False,
                     "created_at": datetime.now(timezone.utc).isoformat(),
-                    "tags": ["test1", "test2"],
+                    "tags": ["test1", "test2", "test3"],
                 },
             )
             assert r.status_code == 200
@@ -115,17 +115,15 @@ async def test_update_link() -> None:
                     "summary": "A Search Engine",
                     "reminder": True,
                     "reading": True,
-                    "tags": ["test1", "test3"],
+                    "tags": ["test1", "test3", "test4"],
                 },
             )
-            assert r.text == ""
             assert r.status_code == 200
 
             # fetch the link and validate the changes
             r = await client.get("/link")
-            assert r.text == ""
             assert r.status_code == 200
             assert r.json()[0]["summary"] == "A Search Engine"
             assert r.json()[0]["reminder"]
             assert r.json()[0]["reading"]
-            assert r.json()[0]["tags"] == ["test1", "test3"]
+            assert r.json()[0]["tags"] == ["test1", "test3", "test4"]
