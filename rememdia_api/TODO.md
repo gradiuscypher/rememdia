@@ -1,8 +1,8 @@
 # Working On
 
-- link patch endpoint works manually but not during tests
-- edit notes
-- edit links
+- edit notes api
+- edit notes tui
+- edit links tui
 
 # Next Up
 
