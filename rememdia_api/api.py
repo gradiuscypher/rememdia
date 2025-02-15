@@ -1,17 +1,12 @@
 import logging
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
-from datetime import datetime, timezone
-from fastapi import FastAPI, Depends, Request, status, HTTPException
+from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
-from sqlalchemy.orm import selectinload
 
-from database import get_db, engine, Base
-from models import NoteModel, NoteOrm, TagOrm, LinkModel, LinkOrm
-from helpers import get_link_metadata
+from database import engine, Base
+from routers import links, notes
 
 
 @asynccontextmanager
@@ -22,6 +17,8 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
 
 app = FastAPI(lifespan=lifespan)
+app.include_router(links.link_router)
+app.include_router(notes.note_router)
 
 
 # ref: https://github.com/tiangolo/fastapi/discussions/6678
@@ -35,130 +32,3 @@ async def validation_exception_handler(
     return JSONResponse(
         content=content, status_code=status.HTTP_422_UNPROCESSABLE_ENTITY
     )
-
-
-@app.post("/note")
-async def save_note(note_obj: NoteModel, db: AsyncSession = Depends(get_db)) -> dict:
-    try:
-        new_note = NoteOrm(
-            note=note_obj.note,
-            reminder=note_obj.reminder,
-            reading=note_obj.reading,
-            created_at=datetime.now(timezone.utc),
-        )
-        db.add(new_note)
-
-        for tag in note_obj.tags:
-            result = await db.execute(select(TagOrm).where(TagOrm.name == tag))
-            tag_instance = result.scalar_one_or_none()
-
-            if tag_instance is None:
-                tag_instance = TagOrm(name=tag)
-                db.add(tag_instance)
-
-            new_note.tags.append(tag_instance)
-
-        await db.commit()
-        return {"success": "Note saved"}
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.get("/note")
-async def get_notes(db: AsyncSession = Depends(get_db)) -> list[NoteModel] | dict:
-    try:
-        query = select(NoteOrm).options(selectinload(NoteOrm.tags))
-        result = await db.execute(query)
-        notes = result.scalars().all()
-
-        note_models = []
-
-        for note in notes:
-            note_model = NoteModel(
-                note=note.note,
-                tags=[tag.name for tag in note.tags],
-                reminder=note.reminder,
-                reading=note.reading,
-                created_at=note.created_at,
-            )
-            note_models.append(note_model)
-
-        return note_models
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.post("/link")
-async def save_link(link_obj: LinkModel, db: AsyncSession = Depends(get_db)) -> dict:
-    try:
-        meta_title, meta_description = await get_link_metadata(link_obj.url)
-        new_link = LinkOrm(
-            url=link_obj.url,
-            summary=link_obj.summary,
-            reminder=link_obj.reminder,
-            reading=link_obj.reading,
-            created_at=datetime.now(timezone.utc),
-            meta_title=meta_title,
-            meta_description=meta_description,
-        )
-        db.add(new_link)
-
-        for tag in link_obj.tags:
-            result = await db.execute(select(TagOrm).where(TagOrm.name == tag))
-            tag_instance = result.scalar_one_or_none()
-
-            if tag_instance is None:
-                tag_instance = TagOrm(name=tag)
-                db.add(tag_instance)
-
-            new_link.tags.append(tag_instance)
-
-        await db.commit()
-        return {"success": "Link saved"}
-
-    except Exception as e:
-        return {"error": str(e)}
-
-
-@app.get("/link")
-async def get_link(db: AsyncSession = Depends(get_db)) -> list[LinkModel] | dict:
-    try:
-        query = select(LinkOrm).options(selectinload(LinkOrm.tags))
-        result = await db.execute(query)
-        links = result.scalars().all()
-
-        link_models = []
-
-        for link in links:
-            link_model = LinkModel(
-                link_id=link.id,
-                url=link.url,
-                summary=link.summary,
-                tags=[tag.name for tag in link.tags],
-                reminder=link.reminder,
-                reading=link.reading,
-                created_at=link.created_at,
-                meta_title=link.meta_title,
-                meta_description=link.meta_description,
-            )
-            link_models.append(link_model)
-
-        return link_models
-
-    except Exception as e:
-        return {"error": str(e)}
-
-
-@app.delete("/link/{link_id}")
-async def delete_link(link_id: int, db: AsyncSession = Depends(get_db)) -> dict:
-    query = select(LinkOrm).where(LinkOrm.id == link_id)
-    result = await db.execute(query)
-    link = result.scalar_one_or_none()
-    if link:
-        await db.delete(link)
-        await db.commit()
-        return {"success": "Link deleted"}
-    else:
-        raise HTTPException(status_code=404, detail="Bob not found")

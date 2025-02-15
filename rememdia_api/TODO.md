@@ -9,11 +9,13 @@
 - Fetching discord messages from a channel where someone saved links and notes
 - Some sort of kanban/idea sorter/daily tasks system
 - Brag doc tracker/interface
+- Tab complete for tags
 
 # TODO
 
 - API pagination for link listing
 - Split TUI into multiple files
+- Example for doing a DB migration
 
 # Backlog
 
@@ -32,3 +34,4 @@
 - Chat with a bot about your notes and links
 - Integration with ATProto
 - Pomodoro app?
+- Screenshot pasting?

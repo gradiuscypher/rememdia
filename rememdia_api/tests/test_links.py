@@ -21,7 +21,7 @@ async def reset_db():
 
 @pytest_asyncio.fixture(loop_scope="module", scope="module")
 async def mock_get_link_metadata():
-    with patch("api.get_link_metadata", new_callable=AsyncMock) as mock:
+    with patch("routers.links.get_link_metadata", new_callable=AsyncMock) as mock:
         mock.return_value = ("Mocked Title", "Mocked Description")
         yield mock
 
