@@ -50,6 +50,7 @@ async def get_notes(db: AsyncSession = Depends(get_db)) -> list[NoteModel] | dic
 
         for note in notes:
             note_model = NoteModel(
+                note_id=note.id,
                 note=note.note,
                 tags=[tag.name for tag in note.tags],
                 reminder=note.reminder,

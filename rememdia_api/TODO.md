@@ -2,23 +2,25 @@
 
 - edit notes tui
 - edit links tui
+- delete note API
+- turn table update in find_note/find_link into a function
 
 # Next Up
 
-- Docker setup for TUI and backend
-- Fetching discord messages from a channel where someone saved links and notes
-- Some sort of kanban/idea sorter/daily tasks system
-- Brag doc tracker/interface
 - Tab complete for tags
+- Docker setup for TUI and backend
 
 # TODO
 
 - API pagination for link listing
 - Split TUI into multiple files
 - Example for doing a DB migration
+- Fetching discord messages from a channel where someone saved links and notes
 
-# Backlog
+# Backlog - Unsorted
 
+- Brag doc tracker/interface
+- Some sort of kanban/idea sorter/daily tasks system
 - Replacement app for Msty, shared history for LLM searches
 - Native app for OSX, Windows, Linux
 - RSS feed subscription management - youtube, blogs, podcasts, etc

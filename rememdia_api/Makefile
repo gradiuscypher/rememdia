@@ -1,10 +1,7 @@
-.PHONY: run tui
+.PHONY: run test
 
 run:
 	uv run fastapi dev api.py
-
-tui:
-	uv run cli/tui.py
 
 test:
 	REM_ENV=test uv run pytest -vv

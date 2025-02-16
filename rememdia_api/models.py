@@ -67,6 +67,7 @@ class TagOrm(Base):
 
 class NoteModel(BaseModel):
     model_config = ConfigDict(from_attributes=True)
+    note_id: int | None = None
     note: str
     reminder: bool
     reading: bool
