@@ -28,25 +28,32 @@ class NoteInput(Screen):
         ),
     ]
 
-    tags = []
+    def __init__(
+        self, note="", tags=[], reminder=False, reading=False, *args, **kwargs
+    ):
+        super().__init__(*args, **kwargs)
+        self.tags = tags
+        self.note = note
+        self.reminder = reminder
+        self.reading = reading
 
     def compose(self) -> ComposeResult:
         yield Container(
             Container(
                 Static("Note:"),
-                Input(id="notes"),
+                Input(id="notes", value=self.note),
                 id="note-input-container",
             ),
             Container(
-                Static("Tags:", id="tag-status"),
+                Static("Tags: " + " ".join(self.tags), id="tag-status"),
                 Input(id="tags"),
                 id="tag-input-container",
             ),
             Horizontal(
                 Static("Reminder: ", classes="label"),
-                Switch(value=False, id="reminder"),
+                Switch(value=self.reminder, id="reminder"),
                 Static("Reading List: ", classes="label"),
-                Switch(value=False, id="reading-list"),
+                Switch(value=self.reading, id="reading-list"),
             ),
             Footer(),
             id="note-input",
@@ -122,6 +129,10 @@ class FindNote(Screen):
         Binding(
             key="d",
             action="delete_row",
+        ),
+        Binding(
+            key="e",
+            action="edit_row",
         ),
     ]
 
@@ -213,6 +224,9 @@ class FindNote(Screen):
             await client.delete(f"http://127.0.0.1:8000/note/{note_id}")
         table.remove_row(row_key)
         await self.refresh_table()
+
+    async def action_edit_row(self) -> None:
+        self.app.push_screen(NoteInput(id="note-input"))
 
 
 class FindNoteSearch(ModalScreen):

@@ -111,3 +111,17 @@ async def update_note(
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@note_router.delete("/note/{note_id}")
+async def delete_link(note_id: int, db: AsyncSession = Depends(get_db)) -> dict:
+    query = select(NoteOrm).where(NoteOrm.id == note_id)
+    result = await db.execute(query)
+    link = result.scalar_one_or_none()
+    if link:
+        await db.delete(link)
+        await db.commit()
+        return {"success": "Note deleted"}
+
+    else:
+        raise HTTPException(status_code=404, detail="Note not found")

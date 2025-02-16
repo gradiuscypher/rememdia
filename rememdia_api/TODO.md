@@ -1,8 +1,9 @@
 # Working On
 
 - edit notes tui
+- cant see reminder switch when going through edit mode
+- after editing refresh table
 - edit links tui
-- delete note API
 - turn table update in find_note/find_link into a function
 
 # Next Up
