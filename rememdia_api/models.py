@@ -74,6 +74,13 @@ class NoteModel(BaseModel):
     tags: list[str]
 
 
+class NoteUpdateModel(BaseModel):
+    note: str | None = None
+    reminder: bool | None = None
+    reading: bool | None = None
+    tags: list[str] | None = None
+
+
 class NoteOrm(Base):
     __tablename__ = "notes"
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)

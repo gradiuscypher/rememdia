@@ -6,7 +6,7 @@ from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
 
 from database import get_db
-from models import TagOrm, NoteModel, NoteOrm
+from models import TagOrm, NoteModel, NoteOrm, NoteUpdateModel
 
 note_router = APIRouter()
 
@@ -59,6 +59,54 @@ async def get_notes(db: AsyncSession = Depends(get_db)) -> list[NoteModel] | dic
             note_models.append(note_model)
 
         return note_models
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@note_router.patch("/note/{note_id}")
+async def update_note(
+    note_id: int, note_update: NoteUpdateModel, db: AsyncSession = Depends(get_db)
+) -> dict:
+    try:
+        query = (
+            select(NoteOrm)
+            .where(NoteOrm.id == note_id)
+            .options(selectinload(NoteOrm.tags))
+        )
+        result = await db.execute(query)
+        note = result.scalar_one_or_none()
+
+        if not note:
+            raise HTTPException(status_code=404, detail="Link not found")
+
+        if note_update.note:
+            note.note = note_update.note
+        if note_update.reminder:
+            note.reminder = note_update.reminder
+        if note_update.reading:
+            note.reading = note_update.reading
+
+        if note_update.tags:
+            # remove the previous tags
+            for tag in note.tags:
+                note.tags.clear()
+
+            # add the updated tags
+            for tag in note_update.tags:
+                result = await db.execute(select(TagOrm).where(TagOrm.name == tag))
+                tag_instance = result.scalar_one_or_none()
+
+                if tag_instance is None:
+                    tag_instance = TagOrm(name=tag)
+                    db.add(tag_instance)
+
+                note.tags.append(tag_instance)
+
+        await db.commit()
+        await db.refresh(note)
+
+        return {"success": "Note updated"}
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

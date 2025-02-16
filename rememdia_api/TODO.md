@@ -1,6 +1,5 @@
 # Working On
 
-- edit notes api
 - edit notes tui
 - edit links tui
 
