@@ -29,13 +29,23 @@ class NoteInput(Screen):
     ]
 
     def __init__(
-        self, note="", tags=[], reminder=False, reading=False, *args, **kwargs
+        self,
+        note_id: int | None = None,
+        note: str = "",
+        tags: list[str] = [],
+        reminder: bool = False,
+        reading: bool = False,
+        is_editing: bool = False,
+        *args,
+        **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self.tags = tags
+        self.note_id = note_id
         self.note = note
         self.reminder = reminder
         self.reading = reading
+        self.is_editing = is_editing
 
     def compose(self) -> ComposeResult:
         yield Container(
@@ -72,23 +82,40 @@ class NoteInput(Screen):
         reminder_value = self.query_one("#reminder", Switch).value
         reading_value = self.query_one("#reading-list", Switch).value
 
-        if event.value and event.input.id == "tags":
-            self.tags.append(event.value)
+        if not self.is_editing:
+            if event.value and event.input.id == "tags":
+                self.tags.append(event.value)
 
-        async with httpx.AsyncClient() as client:
-            await client.post(
-                "http://127.0.0.1:8000/note",
-                json={
-                    "note": note_value,
-                    "tags": self.tags,
-                    "reminder": reminder_value,
-                    "reading": reading_value,
-                },
-            )
+            async with httpx.AsyncClient() as client:
+                await client.post(
+                    "http://127.0.0.1:8000/note",
+                    json={
+                        "note": note_value,
+                        "tags": self.tags,
+                        "reminder": reminder_value,
+                        "reading": reading_value,
+                    },
+                )
 
-        note_str = f"{note_value}: [{self.tags}]"
-        self.dismiss(note_str)
-        self.tags.clear()
+            note_str = f"{note_value}: [{self.tags}]"
+            self.dismiss(note_str)
+            self.tags.clear()
+        else:
+            if event.value and event.input.id == "tags":
+                self.tags.append(event.value)
+
+            async with httpx.AsyncClient() as client:
+                await client.patch(
+                    f"http://127.0.0.1:8000/note/{self.note_id}",
+                    json={
+                        "note": note_value,
+                        "tags": self.tags,
+                        "reminder": reminder_value,
+                        "reading": reading_value,
+                    },
+                )
+            self.dismiss()
+            self.tags.clear()
 
     def on_input_changed(self, event: Input.Changed) -> None:
         if event.input.id == "tags" and event.value and event.value[-1] == " ":
@@ -226,7 +253,19 @@ class FindNote(Screen):
         await self.refresh_table()
 
     async def action_edit_row(self) -> None:
-        self.app.push_screen(NoteInput(id="note-input"))
+        table = self.query_one(DataTable)
+        row_key, _ = table.coordinate_to_cell_key(table.cursor_coordinate)
+        row_data = table.get_row(row_key)
+
+        self.app.push_screen(
+            NoteInput(
+                id="note-input",
+                note_id=row_data[0],
+                is_editing=True,
+                note=row_data[1],
+                tags=row_data[3],
+            )
+        )
 
 
 class FindNoteSearch(ModalScreen):

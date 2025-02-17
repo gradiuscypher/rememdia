@@ -1,7 +1,7 @@
 # Working On
 
-- edit notes tui
 - cant see reminder switch when going through edit mode
+  - but if you load the save note/link UI once, it works fine?
 - after editing refresh table
 - edit links tui
 - turn table update in find_note/find_link into a function
