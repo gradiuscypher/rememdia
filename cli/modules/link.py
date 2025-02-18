@@ -37,9 +37,14 @@ class FindLink(Screen):
             key="d",
             action="delete_row",
         ),
+        Binding(
+            key="e",
+            action="edit_row",
+            description="Edit Row",
+        ),
     ]
 
-    async def refresh_table(self) -> None:
+    async def refresh_table(self, result: bool | None = None) -> None:
         self.links.clear()
         table = self.query_one(DataTable)
         table.clear(columns=True)
@@ -144,6 +149,22 @@ class FindLink(Screen):
         table.remove_row(row_key)
         await self.refresh_table()
 
+    async def action_edit_row(self) -> None:
+        table = self.query_one(DataTable)
+        row_key, _ = table.coordinate_to_cell_key(table.cursor_coordinate)
+        row_data = table.get_row(row_key)
+
+        await self.app.push_screen(
+            LinkInput(
+                link_id=row_data[0],
+                link=row_data[1],
+                summary=row_data[2],
+                tags=row_data[3],
+                is_editing=True,
+            ),
+            self.refresh_table,
+        )
+
 
 class FindLinkSearch(ModalScreen):
     BINDINGS = [
@@ -185,30 +206,49 @@ class LinkInput(Screen):
         ),
     ]
 
-    tags = []
+    def __init__(
+        self,
+        link_id: int | None = None,
+        link: str = "",
+        summary: str = "",
+        tags: list[str] = [],
+        reminder: bool = False,
+        reading: bool = False,
+        is_editing: bool = False,
+        *args,
+        **kwargs,
+    ):
+        super().__init__(*args, **kwargs)
+        self.link_id = link_id
+        self.link = link
+        self.summary = summary
+        self.tags = tags
+        self.reminder = reminder
+        self.reading = reading
+        self.is_editing = is_editing
 
     def compose(self) -> ComposeResult:
         yield Container(
             Container(
                 Static("Link:"),
-                Input(id="links"),
+                Input(id="links", value=self.link),
                 id="link-input-container",
             ),
             Container(
                 Static("Summary:"),
-                Input(id="summary"),
+                Input(id="summary", value=self.summary),
                 id="summary-input-container",
             ),
             Container(
-                Static("Tags:", id="tag-status"),
+                Static("Tags: " + " ".join(self.tags), id="tag-status"),
                 Input(id="tags"),
                 id="tag-input-container",
             ),
             Horizontal(
                 Static("Reminder: ", classes="label"),
-                Switch(value=False, id="reminder"),
+                Switch(value=self.reminder, id="reminder"),
                 Static("Reading List: ", classes="label"),
-                Switch(value=False, id="reading-list"),
+                Switch(value=self.reading, id="reading-list"),
             ),
             Footer(),
             id="link-input",
@@ -231,21 +271,37 @@ class LinkInput(Screen):
         if event.value and event.input.id == "tags":
             self.tags.append(event.value)
 
-        async with httpx.AsyncClient() as client:
-            await client.post(
-                "http://127.0.0.1:8000/link",
-                json={
-                    "url": link_value,
-                    "summary": summary_value,
-                    "tags": self.tags,
-                    "reminder": reminder_value,
-                    "reading": reading_value,
-                },
-            )
+        if not self.is_editing:
+            async with httpx.AsyncClient() as client:
+                await client.post(
+                    "http://127.0.0.1:8000/link",
+                    json={
+                        "url": link_value,
+                        "summary": summary_value,
+                        "tags": self.tags,
+                        "reminder": reminder_value,
+                        "reading": reading_value,
+                    },
+                )
 
-        link_str = f"{link_value}: [{self.tags}]"
-        self.dismiss(link_str)
-        self.tags.clear()
+            self.dismiss()
+            self.tags.clear()
+
+        else:
+            async with httpx.AsyncClient() as client:
+                await client.patch(
+                    f"http://127.0.0.1:8000/link/{self.link_id}",
+                    json={
+                        "url": link_value,
+                        "summary": summary_value,
+                        "tags": self.tags,
+                        "reminder": reminder_value,
+                        "reading": reading_value,
+                    },
+                )
+
+            self.dismiss()
+            self.tags.clear()
 
     def on_input_changed(self, event: Input.Changed) -> None:
         if event.input.id == "tags" and event.value and event.value[-1] == " ":
