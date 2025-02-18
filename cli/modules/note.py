@@ -1,4 +1,5 @@
 import httpx
+
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Container, Horizontal
@@ -97,8 +98,7 @@ class NoteInput(Screen):
                     },
                 )
 
-            note_str = f"{note_value}: [{self.tags}]"
-            self.dismiss(note_str)
+            self.dismiss()
             self.tags.clear()
         else:
             if event.value and event.input.id == "tags":
@@ -163,7 +163,7 @@ class FindNote(Screen):
         ),
     ]
 
-    async def refresh_table(self) -> None:
+    async def refresh_table(self, result: bool | None = None) -> None:
         self.notes.clear()
         table = self.query_one(DataTable)
         table.clear(columns=True)
@@ -245,11 +245,9 @@ class FindNote(Screen):
 
     async def action_delete_row(self) -> None:
         table = self.query_one(DataTable)
-        row_key, _ = table.coordinate_to_cell_key(table.cursor_coordinate)
         note_id = table.get_cell_at(table.cursor_coordinate)
         async with httpx.AsyncClient() as client:
             await client.delete(f"http://127.0.0.1:8000/note/{note_id}")
-        table.remove_row(row_key)
         await self.refresh_table()
 
     async def action_edit_row(self) -> None:
@@ -257,14 +255,15 @@ class FindNote(Screen):
         row_key, _ = table.coordinate_to_cell_key(table.cursor_coordinate)
         row_data = table.get_row(row_key)
 
-        self.app.push_screen(
+        await self.app.push_screen(
             NoteInput(
                 id="note-input",
                 note_id=row_data[0],
                 is_editing=True,
                 note=row_data[1],
                 tags=row_data[3],
-            )
+            ),
+            self.refresh_table,
         )
 
 

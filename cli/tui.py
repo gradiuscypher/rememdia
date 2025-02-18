@@ -7,13 +7,14 @@
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.screen import Screen
-from textual.widgets import Footer, Log, Static
+from textual.widgets import Footer, Static
 
 from modules.link import FindLink, LinkInput
 from modules.note import FindNote, NoteInput
 
 
 class Find(Screen):
+    CSS_PATH = "tui.tcss"
     BINDINGS = [
         Binding(key="l", action="find_links", description="Find a link"),
         Binding(key="n", action="find_notes", description="Find a note"),
@@ -23,10 +24,6 @@ class Find(Screen):
             description="Exit Find",
         ),
     ]
-
-    def action_update_text(self) -> None:
-        window_text = self.query_one("#textlog", Log)
-        window_text.write_line("This is new data.")
 
     def action_back(self) -> None:
         self.app.switch_mode("base")
@@ -38,7 +35,6 @@ class Find(Screen):
         self.app.push_screen(FindNote(id="find-note"))
 
     def compose(self) -> ComposeResult:
-        yield Log(id="textlog")
         yield Footer()
 
 
@@ -58,23 +54,12 @@ class Save(Screen):
         self.app.switch_mode("base")
 
     def action_link(self) -> None:
-        def write_link(link_str: str | None) -> None:
-            window_text = self.query_one("#textlog", Log)
-            if link_str:
-                window_text.write_line(link_str)
-
-        self.app.push_screen(LinkInput(id="link-input"), write_link)
+        self.app.push_screen(LinkInput(id="link-input"))
 
     def action_note(self) -> None:
-        def write_note(note_str: str | None) -> None:
-            window_text = self.query_one("#textlog", Log)
-            if note_str:
-                window_text.write_line(note_str)
-
-        self.app.push_screen(NoteInput(id="note-input"), write_note)
+        self.app.push_screen(NoteInput(id="note-input"))
 
     def compose(self) -> ComposeResult:
-        yield Log(id="textlog")
         yield Footer()
 
 
