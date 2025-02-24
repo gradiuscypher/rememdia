@@ -262,6 +262,8 @@ class FindNote(Screen):
                 is_editing=True,
                 note=row_data[1],
                 tags=row_data[3],
+                reading=True if row_data[4] == "✅" else False,
+                reminder=True if row_data[5] == "✅" else False,
             ),
             self.refresh_table,
         )

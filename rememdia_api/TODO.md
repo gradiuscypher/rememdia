@@ -1,12 +1,11 @@
 # Working On
 
-- edit links tui
-- turn table update in find_note/find_link into a function
+- Tab complete for tags
 
 # Next Up
 
-- Tab complete for tags
 - Docker setup for TUI and backend
+- turn table update in find_note/find_link into a function
 
 # TODO
 

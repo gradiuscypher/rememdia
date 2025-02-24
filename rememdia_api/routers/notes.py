@@ -83,9 +83,9 @@ async def update_note(
 
         if note_update.note:
             note.note = note_update.note
-        if note_update.reminder:
+        if note_update.reminder is not None:
             note.reminder = note_update.reminder
-        if note_update.reading:
+        if note_update.reading is not None:
             note.reading = note_update.reading
 
         if note_update.tags:

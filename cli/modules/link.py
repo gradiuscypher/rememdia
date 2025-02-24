@@ -160,6 +160,8 @@ class FindLink(Screen):
                 link=row_data[1],
                 summary=row_data[2],
                 tags=row_data[3],
+                reading=True if row_data[4] == "✅" else False,
+                reminder=True if row_data[5] == "✅" else False,
                 is_editing=True,
             ),
             self.refresh_table,

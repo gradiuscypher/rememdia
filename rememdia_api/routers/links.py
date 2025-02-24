@@ -111,9 +111,9 @@ async def update_link(
             link.meta_title = link_update.meta_title
         if link_update.meta_description:
             link.meta_description = link_update.meta_description
-        if link_update.reminder:
+        if link_update.reminder is not None:
             link.reminder = link_update.reminder
-        if link_update.reading:
+        if link_update.reading is not None:
             link.reading = link_update.reading
 
         if link_update.tags:
