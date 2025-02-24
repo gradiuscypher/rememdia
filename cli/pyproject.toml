@@ -9,3 +9,9 @@ dependencies = [
     "textual-dev>=1.7.0",
     "textual>=1.0.0",
 ]
+
+[tool.uv]
+dev-dependencies = [
+    "ipython>=8.32.0",
+    "requests>=2.32.3",
+]

@@ -1,9 +1,14 @@
+from os import getenv
+
 import httpx
+
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Container, Horizontal
 from textual.screen import Screen, ModalScreen
 from textual.widgets import DataTable, Footer, Input, Static, Switch
+
+API_HOST = getenv("API_HOST", "http://localhost:8000")
 
 
 class FindLink(Screen):
@@ -61,7 +66,7 @@ class FindLink(Screen):
         )
 
         async with httpx.AsyncClient() as client:
-            link_request = await client.get("http://localhost:8000/link")
+            link_request = await client.get(f"{API_HOST}/link")
             self.links = link_request.json()
             for link in self.links:
                 table_id = link["link_id"]
@@ -145,7 +150,7 @@ class FindLink(Screen):
         row_key, _ = table.coordinate_to_cell_key(table.cursor_coordinate)
         link_id = table.get_cell_at(table.cursor_coordinate)
         async with httpx.AsyncClient() as client:
-            await client.delete(f"http://127.0.0.1:8000/link/{link_id}")
+            await client.delete(f"{API_HOST}/link/{link_id}")
         table.remove_row(row_key)
         await self.refresh_table()
 
@@ -276,7 +281,7 @@ class LinkInput(Screen):
         if not self.is_editing:
             async with httpx.AsyncClient() as client:
                 await client.post(
-                    "http://127.0.0.1:8000/link",
+                    f"{API_HOST}/link",
                     json={
                         "url": link_value,
                         "summary": summary_value,
@@ -292,7 +297,7 @@ class LinkInput(Screen):
         else:
             async with httpx.AsyncClient() as client:
                 await client.patch(
-                    f"http://127.0.0.1:8000/link/{self.link_id}",
+                    f"{API_HOST}/link/{self.link_id}",
                     json={
                         "url": link_value,
                         "summary": summary_value,

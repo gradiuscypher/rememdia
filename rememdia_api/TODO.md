@@ -1,10 +1,10 @@
 # Working On
 
-- Tab complete for tags
+- finish tag autocomplete for links
+- the docker compose version seems to have different color css
 
 # Next Up
 
-- Docker setup for TUI and backend
 - turn table update in find_note/find_link into a function
 
 # TODO
@@ -16,6 +16,9 @@
 
 # Backlog - Unsorted
 
+- Need a nice way of surfacing already existing tags to use them as folders
+- wrap db calls in an async with block
+- quick actions for adding tags to notes/links
 - Brag doc tracker/interface
 - Some sort of kanban/idea sorter/daily tasks system
 - Replacement app for Msty, shared history for LLM searches
@@ -35,3 +38,8 @@
 - Integration with ATProto
 - Pomodoro app?
 - Screenshot pasting?
+- Can we use Mistral for autocomplete
+
+# Someday Problems
+
+- Might need to paginate tag query for tab complete in TUI

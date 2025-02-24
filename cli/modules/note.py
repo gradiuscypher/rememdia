@@ -1,10 +1,16 @@
+from os import getenv
+
 import httpx
 
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Container, Horizontal
 from textual.screen import Screen, ModalScreen
+from textual.suggester import SuggestFromList
 from textual.widgets import DataTable, Footer, Input, Static, Switch
+
+
+API_HOST = getenv("API_HOST", "http://localhost:8000")
 
 
 class NoteInput(Screen):
@@ -49,6 +55,7 @@ class NoteInput(Screen):
         self.is_editing = is_editing
 
     def compose(self) -> ComposeResult:
+        tag_list = httpx.get(f"{API_HOST}/tags").json()
         yield Container(
             Container(
                 Static("Note:"),
@@ -57,7 +64,10 @@ class NoteInput(Screen):
             ),
             Container(
                 Static("Tags: " + " ".join(self.tags), id="tag-status"),
-                Input(id="tags"),
+                Input(
+                    id="tags",
+                    suggester=SuggestFromList(tag_list),
+                ),
                 id="tag-input-container",
             ),
             Horizontal(
@@ -89,7 +99,7 @@ class NoteInput(Screen):
 
             async with httpx.AsyncClient() as client:
                 await client.post(
-                    "http://127.0.0.1:8000/note",
+                    f"{API_HOST}/note",
                     json={
                         "note": note_value,
                         "tags": self.tags,
@@ -106,7 +116,7 @@ class NoteInput(Screen):
 
             async with httpx.AsyncClient() as client:
                 await client.patch(
-                    f"http://127.0.0.1:8000/note/{self.note_id}",
+                    f"{API_HOST}/note/{self.note_id}",
                     json={
                         "note": note_value,
                         "tags": self.tags,
@@ -178,7 +188,7 @@ class FindNote(Screen):
         )
 
         async with httpx.AsyncClient() as client:
-            note_request = await client.get("http://localhost:8000/note")
+            note_request = await client.get(f"{API_HOST}/note")
             self.notes = note_request.json()
             for note in self.notes:
                 table_id = note["note_id"]
@@ -247,7 +257,7 @@ class FindNote(Screen):
         table = self.query_one(DataTable)
         note_id = table.get_cell_at(table.cursor_coordinate)
         async with httpx.AsyncClient() as client:
-            await client.delete(f"http://127.0.0.1:8000/note/{note_id}")
+            await client.delete(f"{API_HOST}/note/{note_id}")
         await self.refresh_table()
 
     async def action_edit_row(self) -> None:

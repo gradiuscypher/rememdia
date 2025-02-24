@@ -1,0 +1,19 @@
+version: "3"
+services:
+  cli:
+    environment:
+      - API_HOST=http://api:8000
+    build:
+      context: ./cli
+      dockerfile: Dockerfile
+    tty: true
+    stdin_open: true
+    links:
+      - api
+
+  api:
+    build:
+      context: ./rememdia_api
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
