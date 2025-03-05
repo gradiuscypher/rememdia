@@ -6,6 +6,7 @@ from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Container, Horizontal
 from textual.screen import Screen, ModalScreen
+from textual.suggester import SuggestFromList
 from textual.widgets import DataTable, Footer, Input, Static, Switch
 
 API_HOST = getenv("API_HOST", "http://localhost:8000")
@@ -235,6 +236,7 @@ class LinkInput(Screen):
         self.is_editing = is_editing
 
     def compose(self) -> ComposeResult:
+        tag_list = httpx.get(f"{API_HOST}/tags").json()
         yield Container(
             Container(
                 Static("Link:"),
@@ -248,7 +250,7 @@ class LinkInput(Screen):
             ),
             Container(
                 Static("Tags: " + " ".join(self.tags), id="tag-status"),
-                Input(id="tags"),
+                Input(id="tags", suggester=SuggestFromList(tag_list)),
                 id="tag-input-container",
             ),
             Horizontal(
