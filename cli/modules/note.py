@@ -2,6 +2,7 @@ from os import getenv
 
 import httpx
 
+from desktop_notifier import DesktopNotifier
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Container, Horizontal
@@ -11,6 +12,21 @@ from textual.widgets import DataTable, Footer, Input, Static, Switch
 
 
 API_HOST = getenv("API_HOST", "http://localhost:8000")
+notifier = DesktopNotifier()
+
+
+async def note_reminder_job() -> None:
+    reminder_list = httpx.get(f"{API_HOST}/note?reminder=true").json()
+
+    for reminder in reminder_list:
+        await notifier.send(
+            title="Rememdia - Notes",
+            message=f"This is a note reminder: {reminder['note']}",
+        )
+
+
+async def note_reading_job() -> None:
+    await notifier.send(title="Rememdia - Notes", message="This is a note reading")
 
 
 class NoteInput(Screen):
@@ -272,8 +288,8 @@ class FindNote(Screen):
                 is_editing=True,
                 note=row_data[1],
                 tags=row_data[3],
-                reading=True if row_data[4] == "✅" else False,
-                reminder=True if row_data[5] == "✅" else False,
+                reading=True if row_data[5] == "✅" else False,
+                reminder=True if row_data[4] == "✅" else False,
             ),
             self.refresh_table,
         )

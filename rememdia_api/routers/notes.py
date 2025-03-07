@@ -40,9 +40,18 @@ async def save_note(note_obj: NoteModel, db: AsyncSession = Depends(get_db)) -> 
 
 
 @note_router.get("/note")
-async def get_notes(db: AsyncSession = Depends(get_db)) -> list[NoteModel] | dict:
+async def get_notes(
+    reminder: bool | None = None,
+    reading: bool | None = None,
+    db: AsyncSession = Depends(get_db),
+) -> list[NoteModel] | dict:
     try:
         query = select(NoteOrm).options(selectinload(NoteOrm.tags))
+        if reminder is not None:
+            query = query.where(NoteOrm.reminder == reminder)
+        if reading is not None:
+            query = query.where(NoteOrm.reading == reading)
+
         result = await db.execute(query)
         notes = result.scalars().all()
 

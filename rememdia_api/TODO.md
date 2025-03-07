@@ -1,7 +1,7 @@
 # Working On
 
 - Reminder implementation
-  - using desktop-notifier and apscheduler (https://apscheduler.readthedocs.io/en/3.x/userguide.html)
+  - can we keep the notifications up for longer than the default?
 - Reading list implementation
 
 # Next Up
@@ -13,6 +13,7 @@
 
 # Backlog - Unsorted
 
+- More robust error handling
 - Example for doing a DB migration
 - Split TUI into multiple files
 - turn table update in find_note/find_link into a function

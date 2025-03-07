@@ -44,10 +44,19 @@ async def save_link(link_obj: LinkModel, db: AsyncSession = Depends(get_db)) -> 
         return {"error": str(e)}
 
 
-@link_router.get("/link")
-async def get_link(db: AsyncSession = Depends(get_db)) -> list[LinkModel] | dict:
+async def get_links(
+    reminder: bool | None = None,
+    reading: bool | None = None,
+    db: AsyncSession = Depends(get_db),
+) -> list[LinkModel] | dict:
     try:
         query = select(LinkOrm).options(selectinload(LinkOrm.tags))
+
+        if reminder is not None:
+            query = query.where(LinkOrm.reminder == reminder)
+        if reading is not None:
+            query = query.where(LinkOrm.reading == reading)
+
         result = await db.execute(query)
         links = result.scalars().all()
 

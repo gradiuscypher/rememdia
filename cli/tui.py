@@ -4,13 +4,15 @@
 # to run textual debug from git repo:
 # uv run textual run --dev -c uv run tui.py
 
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from desktop_notifier import DesktopNotifier
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.screen import Screen
 from textual.widgets import Footer, Static
 
 from modules.link import FindLink, LinkInput
-from modules.note import FindNote, NoteInput
+from modules.note import FindNote, NoteInput, note_reminder_job, note_reading_job
 
 
 class Find(Screen):
@@ -88,6 +90,11 @@ class RemTui(App):
         yield Footer()
 
     def on_mount(self) -> None:
+        self.notifier = DesktopNotifier()
+        self.scheduler = AsyncIOScheduler()
+        self.scheduler.add_job(note_reminder_job, "interval", seconds=5)
+        # self.scheduler.add_job(note_reading_job, "interval", seconds=10)
+        self.scheduler.start()
         self.switch_mode("base")
 
 
