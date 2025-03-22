@@ -1,3 +1,4 @@
+import webbrowser
 from os import getenv
 
 import httpx
@@ -15,14 +16,19 @@ API_HOST = getenv("API_HOST", "http://localhost:8000")
 notifier = DesktopNotifier()
 
 
+def open_google() -> None:
+    webbrowser.open("https://www.google.com", new=2, autoraise=True)
+
+
 async def note_reminder_job() -> None:
     reminder_list = httpx.get(f"{API_HOST}/note?reminder=true").json()
 
-    for reminder in reminder_list:
-        await notifier.send(
-            title="Rememdia - Notes",
-            message=f"This is a note reminder: {reminder['note']}",
-        )
+    await notifier.send(
+        title="Rememdia - Notes",
+        message=f"Test note reminder",
+        on_clicked=open_google,
+        on_dismissed=open_google,
+    )
 
 
 async def note_reading_job() -> None:

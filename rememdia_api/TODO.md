@@ -1,5 +1,6 @@
 # Working On
 
+- Notifications will need to be done in something like Discord until we have an official osx app
 - Reminder implementation
   - can we keep the notifications up for longer than the default?
 - Reading list implementation
