@@ -3,7 +3,6 @@ from os import getenv
 
 import httpx
 
-from desktop_notifier import DesktopNotifier
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Container, Horizontal
@@ -13,7 +12,6 @@ from textual.widgets import DataTable, Footer, Input, Static, Switch
 
 
 API_HOST = getenv("API_HOST", "http://localhost:8000")
-notifier = DesktopNotifier()
 
 
 def open_google() -> None:
@@ -23,16 +21,9 @@ def open_google() -> None:
 async def note_reminder_job() -> None:
     reminder_list = httpx.get(f"{API_HOST}/note?reminder=true").json()
 
-    await notifier.send(
-        title="Rememdia - Notes",
-        message=f"Test note reminder",
-        on_clicked=open_google,
-        on_dismissed=open_google,
-    )
-
 
 async def note_reading_job() -> None:
-    await notifier.send(title="Rememdia - Notes", message="This is a note reading")
+    pass
 
 
 class NoteInput(Screen):

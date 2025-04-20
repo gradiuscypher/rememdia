@@ -44,6 +44,7 @@ async def save_link(link_obj: LinkModel, db: AsyncSession = Depends(get_db)) -> 
         return {"error": str(e)}
 
 
+@link_router.get("/link")
 async def get_links(
     reminder: bool | None = None,
     reading: bool | None = None,
