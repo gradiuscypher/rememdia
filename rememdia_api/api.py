@@ -11,6 +11,7 @@ from sqlalchemy.future import select
 from database import engine, Base, get_db
 from models import TagOrm
 from routers import links, notes
+from services.links import get_links_from_db
 
 
 scheduler = AsyncIOScheduler()
@@ -19,11 +20,19 @@ scheduler = AsyncIOScheduler()
 @scheduler.scheduled_job('interval', seconds=5)
 async def check_reminders():
     print("Checking reminders")
+    async for db in get_db():
+        reminder_links = await get_links_from_db(db, reminder=True)
+        for link in reminder_links:
+            print(link)
 
 
 @scheduler.scheduled_job('interval', seconds=2)
 async def check_reading():
     print("Checking reading")
+    async for db in get_db():
+        reading_links = await get_links_from_db(db, reading=True)
+        for link in reading_links:
+            print(link)
 
 
 @asynccontextmanager

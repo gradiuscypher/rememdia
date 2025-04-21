@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-
+import traceback
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -8,6 +8,7 @@ from sqlalchemy.orm import selectinload
 from database import get_db
 from models import LinkModel, LinkUpdateModel, LinkOrm, TagOrm
 from helpers import get_link_metadata
+from services.links import get_links_from_db
 
 link_router = APIRouter()
 
@@ -51,35 +52,9 @@ async def get_links(
     db: AsyncSession = Depends(get_db),
 ) -> list[LinkModel] | dict:
     try:
-        query = select(LinkOrm).options(selectinload(LinkOrm.tags))
-
-        if reminder is not None:
-            query = query.where(LinkOrm.reminder == reminder)
-        if reading is not None:
-            query = query.where(LinkOrm.reading == reading)
-
-        result = await db.execute(query)
-        links = result.scalars().all()
-
-        link_models = []
-
-        for link in links:
-            link_model = LinkModel(
-                link_id=link.id,
-                url=link.url,
-                summary=link.summary,
-                tags=[tag.name for tag in link.tags],
-                reminder=link.reminder,
-                reading=link.reading,
-                created_at=link.created_at,
-                meta_title=link.meta_title,
-                meta_description=link.meta_description,
-            )
-            link_models.append(link_model)
-
-        return link_models
-
+        return await get_links_from_db(db, reminder, reading)
     except Exception as e:
+        print(traceback.format_exc())
         return {"error": str(e)}
 
 
