@@ -1,4 +1,3 @@
-import webbrowser
 from os import getenv
 
 import httpx
@@ -12,18 +11,6 @@ from textual.widgets import DataTable, Footer, Input, Static, Switch
 
 
 API_HOST = getenv("API_HOST", "http://localhost:8000")
-
-
-def open_google() -> None:
-    webbrowser.open("https://www.google.com", new=2, autoraise=True)
-
-
-async def note_reminder_job() -> None:
-    reminder_list = httpx.get(f"{API_HOST}/note?reminder=true").json()
-
-
-async def note_reading_job() -> None:
-    pass
 
 
 class NoteInput(Screen):

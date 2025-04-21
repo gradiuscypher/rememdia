@@ -263,14 +263,6 @@ class LinkInput(Screen):
             id="link-input",
         )
 
-    def action_reminder(self) -> None:
-        reminder = self.query_one("#reminder", Switch)
-        reminder.value = not reminder.value
-
-    def action_reading_list(self) -> None:
-        reading_list = self.query_one("#reading-list", Switch)
-        reading_list.value = not reading_list.value
-
     async def on_input_submitted(self, event: Input.Submitted) -> None:
         link_value = self.query_one("#links", Input).value
         summary_value = self.query_one("#summary", Input).value
