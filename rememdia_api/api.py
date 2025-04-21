@@ -1,3 +1,4 @@
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 import logging
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
@@ -12,11 +13,31 @@ from models import TagOrm
 from routers import links, notes
 
 
+scheduler = AsyncIOScheduler()
+
+
+@scheduler.scheduled_job('interval', seconds=5)
+async def check_reminders():
+    print("Checking reminders")
+
+
+@scheduler.scheduled_job('interval', seconds=2)
+async def check_reading():
+    print("Checking reading")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    # Start scheduler when app starts
+    scheduler.start()
+    
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+    
     yield
+    
+    # Shut down scheduler when app stops
+    scheduler.shutdown()
 
 
 app = FastAPI(lifespan=lifespan)
