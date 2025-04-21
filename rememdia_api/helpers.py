@@ -4,6 +4,8 @@ import httpx
 from bs4 import BeautifulSoup
 from bs4.element import Tag
 
+from settings import DISCORD_WEBHOOK
+
 
 client = httpx.AsyncClient(follow_redirects=True)
 
@@ -56,3 +58,19 @@ async def get_link_metadata(url: str) -> tuple[str, str]:
 
     else:
         return title, description
+
+
+async def send_discord_message(message: str):
+    if not DISCORD_WEBHOOK:
+        logger.warning("No discord webhook found")
+        return
+
+    try:
+        webhook_embed = {
+            "title": "Rememdia",
+            "description": message,
+            "color": 0x00ff00,
+        }
+        await client.post(DISCORD_WEBHOOK, json={"embeds": [webhook_embed]})
+    except Exception as exc:
+        logger.exception("Error while sending discord message", exc_info=exc)
